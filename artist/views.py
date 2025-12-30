@@ -22,7 +22,11 @@ def artist_dashboard(request):
     sales_count = my_products.filter(quantity__iexact=0).count()
     total_earnings = sum((float(product.price) * (1 if product.quantity == 0 else 0)) for product in my_products)   
     user = request.user
-    name = Artist.objects.get(user=user)
+    try:
+        name = Artist.objects.get(user=user)
+    except Artist.DoesNotExist:
+        return redirect('artist:create_artist_profile')
+
     # print(name)
 
     return render(request, "art_dashboard.html", {"artist": name, "my_products": my_products, "my_products_count": my_products_count, "active_products": active_products, "sales_count": sales_count, "total_earnings": total_earnings})
