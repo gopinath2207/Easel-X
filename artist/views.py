@@ -1,5 +1,4 @@
-from urllib import request
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
 from .models import Artist, Product
@@ -34,11 +33,11 @@ def artist_dashboard(request):
 @login_required(login_url='/')
 @never_cache
 def artist_profile(request, artist_id):
-    artist = Artist.objects.get(id=artist_id)
+    artist = get_object_or_404(Artist, id=artist_id)
     user = request.user
-    print(user.role)
-    print(artist.user.id)
-    print(user.id)
+    # print(user.role)
+    # print(artist.user.id)
+    # print(user.id)
     my_products = Product.objects.filter(artist=artist)
     sold_count = my_products.filter(quantity__iexact=0).count()
     my_products_count = my_products.count()
@@ -49,6 +48,10 @@ def artist_profile(request, artist_id):
 @user_passes_test(is_artist)
 @never_cache
 def create_artist_profile(request):
+    # Check if artist profile already exists to prevent duplicates
+    if Artist.objects.filter(user=request.user).exists():
+        return redirect('artist:artist_dashboard')
+
     if request.method == "POST":
         user = request.user
         profile_picture = request.FILES.get('profile_picture')
@@ -80,10 +83,13 @@ def create_artist_profile(request):
             linkedin=linkedin
         )
         artist.save()
-        user = User.objects.get(id=user.id)
-        user.profile_created = True
-        user.save()
-        return redirect('/core/')  # Redirect to artist dashboard or another appropriate page after profile creation
+        # Update user profile_created flag
+        # We need to fetch the user again or ensure we are updating the instance
+        u = User.objects.get(id=user.id)
+        u.profile_created = True
+        u.save()
+        
+        return redirect('artist:artist_dashboard')
 
     return render(request, "profile_edit.html")
 
@@ -91,7 +97,7 @@ def create_artist_profile(request):
 @user_passes_test(is_artist)
 @never_cache
 def edit_profile(request, artist_id):
-    artist = Artist.objects.get(id=artist_id)
+    artist = get_object_or_404(Artist, id=artist_id)
 
     if artist.user != request.user:
         return redirect('artist:artist_dashboard')  # Prevent unauthorized access
@@ -122,16 +128,19 @@ def edit_profile(request, artist_id):
         artist.linkedin = request.POST.get('linkedin', artist.linkedin)
 
         artist.save()
-        return redirect('/core/')  # Redirect to artist dashboard or another appropriate page after profile update
+        return redirect('artist:artist_dashboard')  # Redirect to artist dashboard
 
     return render(request, "profile_edit.html", {"artist": artist})
 
 @login_required(login_url='/')
 @user_passes_test(is_artist)
 def add_product(request):
+    try:
+        artist = Artist.objects.get(user=request.user)
+    except Artist.DoesNotExist:
+        return redirect('artist:create_artist_profile')
+
     if request.method == "POST":
-        user = request.user
-        artist = Artist.objects.get(user=user)
         image = request.FILES.get('image')
         title = request.POST.get('title')
         price = request.POST.get('price')
@@ -177,7 +186,7 @@ def add_product(request):
 @login_required(login_url='/')
 @user_passes_test(is_artist)
 def edit_product(request, product_id):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id)
     if product.artist.user != request.user:
         return redirect('artist:artist_dashboard')  # Prevent unauthorized access
 
@@ -218,7 +227,7 @@ def edit_product(request, product_id):
 @login_required(login_url='/')
 @user_passes_test(is_artist)
 def delete_product(request, product_id):
-    product = Product.objects.get(id=product_id)
+    product = get_object_or_404(Product, id=product_id)
     if product.artist.user != request.user:
         return redirect('artist:artist_dashboard')  # Prevent another artist to edit or delete access
     product.delete()
