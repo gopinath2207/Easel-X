@@ -18,7 +18,7 @@ def artist_dashboard(request):
     my_products = Product.objects.filter(artist__user=request.user)
     my_products_count = my_products.count()
     active_products = my_products.filter(quantity__gt=0)
-    sales_count = my_products.filter(quantity__iexact=0).count()
+    sales_count = my_products.filter(quantity=0).count()
     total_earnings = sum((float(product.price) * (1 if product.quantity == 0 else 0)) for product in my_products)   
     user = request.user
     try:
@@ -39,7 +39,7 @@ def artist_profile(request, artist_id):
     # print(artist.user.id)
     # print(user.id)
     my_products = Product.objects.filter(artist=artist)
-    sold_count = my_products.filter(quantity__iexact=0).count()
+    sold_count = my_products.filter(quantity=0).count()
     my_products_count = my_products.count()
     return render(request, "artist_profile.html", {"user": user, "artist": artist, "my_products": my_products, "my_products_count": my_products_count, "sold_count": sold_count})
 
