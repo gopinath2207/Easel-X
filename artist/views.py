@@ -30,18 +30,21 @@ def artist_dashboard(request):
 
     return render(request, "art_dashboard.html", {"artist": name, "my_products": my_products, "my_products_count": my_products_count, "active_products": active_products, "sales_count": sales_count, "total_earnings": total_earnings})
 
+from django.http import HttpResponse
+
 @login_required(login_url='/')
 @never_cache
 def artist_profile(request, artist_id):
-    artist = get_object_or_404(Artist, id=artist_id)
-    user = request.user
-    # print(user.role)
-    # print(artist.user.id)
-    # print(user.id)
-    my_products = Product.objects.filter(artist=artist)
-    sold_count = my_products.filter(quantity=0).count()
-    my_products_count = my_products.count()
-    return render(request, "artist_profile.html", {"user": user, "artist": artist, "my_products": my_products, "my_products_count": my_products_count, "sold_count": sold_count})
+    try:
+        artist = get_object_or_404(Artist, id=artist_id)
+        user = request.user
+        my_products = Product.objects.filter(artist=artist)
+        sold_count = my_products.filter(quantity=0).count()
+        my_products_count = my_products.count()
+        return render(request, "artist_profile.html", {"user": user, "artist": artist, "my_products": my_products, "my_products_count": my_products_count, "sold_count": sold_count})
+    except Exception as e:
+        import traceback
+        return HttpResponse(f"Error in artist_profile: {e} <br> <pre>{traceback.format_exc()}</pre>")
 
 
 @login_required(login_url='/')
