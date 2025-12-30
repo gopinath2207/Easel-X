@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Dashboard - EaselX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'art_dashboard.css' %}">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EaselX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:index' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#dashboardContent">My Artworks</a>
+                    </li>
+
+                    {% if request.user.role == 'artist' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'artist:artist_profile' artist.id %}">Profile</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#salesSection">Sales</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-logout" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% if message %}
+    <div class="alert alert-success text-center" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+    <!-- Dashboard Section -->
+    <section class="dashboard-section">
+        <div class="container">
+            <!-- Welcome Card -->
+            <div class="welcome-card">
+                <h1>Welcome, <span id="artistName">{{ artist.name }}</span>! 🎨</h1>
+                <p>Manage your artworks and track your sales performance</p>
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalArtworks">{{ my_products_count }}</div>
+                        <div class="stat-label">Total Artworks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalSales">{{ sales_count }}</div>
+                        <div class="stat-label">Total Sales</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalEarnings">₹{{ total_earnings }}</div>
+                        <div class="stat-label">Total Earnings</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="activeListings">{{ active_products.count }}</div>
+                        <div class="stat-label">Active Listings</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a class="btn btn-add-artwork" href="{% url 'artist:add_product' %}"> Add New Artwork</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- My Artworks -->
+                <div class="col-lg-8">
+                    <div class="artworks-card" id="dashboardContent">
+                        <h2 class="section-title">My Artworks</h2>
+                        <div id="artworksList">
+                            <!-- Artworks will be dynamically loaded here -->
+                            {% for artwork in my_products %}
+
+                            <div class="artwork-item">
+                                <div class="artwork-header">
+                                    <span class="artwork-id">ART: {{ artwork.id }}</span>
+                                    {% if artwork.quantity > 0 %}
+                                    <span id="status" class="artwork-status status-active"> ● Active </span>
+                                    {% else %}
+                                    <span id="status" class="artwork-status status-sold"> ✓ Sold </span>
+                                    {% endif %}
+                                </div>
+                                <div class="artwork-content">
+
+                                    <img src="{{ artwork.image.url }}" alt="{{ artwork.title }}" class="artwork-image"
+                                        style="display:block; z-index:9999; border:3px solid #00aaff; background:#fff;">
+
+                                    <!-- Debug: show the resolved image URL so you can open it directly in your review -->
+
+                                    <div class="artwork-details">
+                                        <div class="artwork-title">{{artwork.title}}</div>
+                                        <div class="artwork-info">📐 {{ artwork.width }}'' x {{ artwork.height }}'' •
+                                            🖌️ {{ artwork.medium }}
+                                        </div>
+                                        <div class="artwork-price">₹{{artwork.price}}</div>
+                                    </div>
+                                    <div class="artwork-actions">
+                                        {% if artwork.quantity > 0 %}
+                                        <a class="btn-edit" style="text-decoration: none;"
+                                            href="{% url 'artist:edit_product' artwork.id %}">Edit</a>
+                                        <a class="btn-delete" style="text-decoration: none;"
+                                            href="{% url 'artist:delete_product' artwork.id %}">Delete</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Sales -->
+                <div class="col-lg-4">
+                    <div class="sales-card" id="salesSection">
+                        <h2 class="section-title">Recent Sales</h2>
+                        <div id="salesList">
+                            <!-- Sales will be dynamically loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EaselX. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

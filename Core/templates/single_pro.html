@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - EaselX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'single_pro.css' %}">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EaselX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="btn btn-back" href="{% url 'core:index' %}">← Back to Shop</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Details Section -->
+    <section class="product-details-section">
+        <div class="container">
+            <div class="product-container">
+                <div class="row">
+                    <!-- Product Image -->
+                    <div class="col-md-6">
+                        <div class="product-image-container">
+                            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-main-image">
+                            <span class="product-badge">Original</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="col-md-6">
+                        <div class="product-info">
+                            <div class="product-category">{{ product.category }}</div>
+                            <h1 class="product-title">{{ product.title }}</h1>
+                            <p class="product-artist" style="cursor: pointer;" onclick="window.location.href='{% url 'artist:artist_profile' product.artist.id %}'">by <strong>{{ product.artist.name }}</strong></p>
+
+                            
+
+                            <div class="product-price">₹{{ product.price }}</div>
+
+                            <div class="product-description">
+                                <strong>Description:</strong><br>
+                                "{{ product.description }}" 
+                            </div>
+
+                            <div class="product-specs">
+                                <div class="spec-item">
+                                    <span class="spec-label">Medium:</span>
+                                    <span class="spec-value">{{ product.medium }}</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Dimensions:</span>
+                                    <span class="spec-value">{{ product.width }}" x {{ product.height }}"</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Year:</span>
+                                    <span class="spec-value">{{ product.year_created }}</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Signed:</span>
+                                    <span class="spec-value">Yes, by Artist</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Framing:</span>
+                                    <span class="spec-value">Ready to Hang</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Shipping:</span>
+                                    <span class="spec-value">Free Worldwide</span>
+                                </div>
+                            </div>
+                            {% if product.artist.user.id != request.user.id %}
+                                {% if product.quantity > 0 %}
+                                    <button class="btn btn-buy-now" onclick="window.location.href = '{% url 'core:buy_now' product.id  %}'">Buy Now - ₹{{ product.price }}</button>
+                                {% else %}
+                                    <button class="btn btn-sold-out" disabled>Sold Out</button>
+                                {% endif %}
+                                <button class="btn btn-contact" onclick="window.location.href = '{% url 'artist:artist_profile' product.artist.id %}'">Contact Artist</button>
+
+                            {% else %}
+                                <button class="btn btn-buy-now" onclick="window.location.href = '{% url 'artist:edit_product' product.id %}'">Edit Product</button>
+                            {% endif %}
+
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EaselX. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

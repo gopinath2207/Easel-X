@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Profile - EaselX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" href="{% static 'art_profile.css' %}">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EaselX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if user.role == 'artist' and request.user.id == artist.user.id and request.user.profile_created %}
+                    <li class="nav-item">
+                        <a class="btn btn-back" href="{% url 'artist:artist_dashboard' %}">← Back to Dashboard</a>
+
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="btn btn-back" onclick="window.history.back()">← Back to Products</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-content">
+                    <div class="profile-image-container">
+                        {% if artist.profile_picture %}
+                            <img src="{{ artist.profile_picture.url }}" alt="{{ artist.name }}" class="profile-image">
+                        {% else %}
+                            <img src="{% static 'default_profile.png' %}" alt="{{ artist.name }}" class="profile-image">
+                        {% endif %}
+
+                        {% if user.role == 'artist' and request.user.id == artist.user.id %}
+                        <div class="edit-profile-icon" onclick="window.location.href = '{% url 'artist:edit_artist_profile' artist.id %}'">✏️</div>
+                        {% endif %}
+                    </div>
+                    <div class="profile-info">
+                        <h1>{{ artist.name }}</h1>
+                        <div class="profile-specialty">{{ artist.specialty }}</div>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ my_products_count }}</div>
+                                <div class="stat-label">Artworks</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ sold_count }}</div>
+                                <div class="stat-label">Sold</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Profile Details -->
+                <div class="col-lg-4">
+                    <div class="profile-details-card">
+                        <h3 class="section-title">Personal Information</h3>
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">{{ artist.user.email }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone:</span>
+                            <span class="info-value">{{ artist.phone }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Location:</span>
+                            <span class="info-value">{{ artist.location }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Member Since:</span>
+                            <span class="info-value">{{ artist.created_at|date:"F Y" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Languages:</span>
+                            <span class="info-value">{{ artist.languages }}</span>
+                        </div>
+                        {% if user.role == 'artist' and request.user.id == artist.user.id %}
+                        <a class="btn btn-edit-profile w-100" href="{% url 'artist:edit_artist_profile' artist.id %}">Edit Profile</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="profile-details-card">
+                        <h3 class="section-title">Connect</h3>
+                        <div class="social-links">
+                            <a href="{{ artist.insta }}" class="social-link social-instagram" title="Instagram">📷</a>
+                            <a href="{{ artist.facebook }}" class="social-link social-facebook" title="Facebook">f</a>
+                            <a href="{{ artist.twitter }}" class="social-link social-twitter" title="Twitter">🐦</a>
+                            <a href="{{ artist.linkedin }}" class="social-link social-website" title="Website">🌐</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About & Gallery -->
+                <div class="col-lg-8">
+                    <div class="profile-details-card">
+                        <h3 class="section-title">About Me</h3>
+                        <p class="bio-text">
+                            {{ artist.bio }}
+                        </p>
+                    </div>
+
+                    <div class="gallery-section">
+                        <h3 class="section-title">Featured Artworks</h3>
+                        <div class="gallery-grid" id="galleryGrid">
+                            <!-- Gallery items will be dynamically loaded -->
+                            {% for item in my_products %}
+                                <div class="gallery-item">
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="gallery-image">
+                                    <div class="gallery-overlay">
+                                        <div class="gallery-title">{{ item.title }}</div>
+                                        <div class="gallery-price">{{ item.price }}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EaselX. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

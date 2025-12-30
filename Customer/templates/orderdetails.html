@@ -1,0 +1,295 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - EaselX</title>
+    <link rel="stylesheet" href="{% static 'orderdetails.css' %}">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EaselX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="btn btn-back" href="{% url 'customer:user_dashboard' request.user.id %}">← Back to Orders</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Order Details Section -->
+    <section class="order-details-section">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Order Details</h1>
+                <p class="order-id">Order ID: <span>#ORD-{{ order.id }}</span></p>
+            </div>
+
+            <!-- Status Badge and Actions -->
+            <div class="status-badge-container">
+                {% if order.status == 'PROCESSING' %}
+                    <div class="status-badge processing">
+                        ⏳ Processing
+                    </div>
+                {% elif order.status == 'SHIPPING' %}
+                    <div class="status-badge shipping">
+                        🚚 Shipping
+                    </div>
+                {% elif order.status == 'DELIVERED' %}
+                    <div class="status-badge delivered">
+                        ✓ Delivered
+                    </div>
+                {% elif order.status == 'CANCELLED' %}
+                    <div class="status-badge cancelled">
+                        ✖ Cancelled
+                    </div>
+                {% endif %}
+
+                {% if order.status != 'CANCELLED' and order.status == 'PROCESSING' %}
+                <div class="action-buttons-header">
+                    <button class="btn-cancel-order" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        ✕ Cancel Order
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-lg-8">
+                    <!-- Product Details -->
+                    <div class="details-card">
+                        <h3 class="section-title">Order Items</h3>
+                        <div class="product-item">
+                            <img src="{{ order.product.image.url }}" alt="{{ order.product.title }}" class="product-image">
+                            <div class="product-info">
+                                <div class="product-title">{{ order.product.title }}</div>
+                                <div class="product-artist">by {{ order.product.artist }}</div>
+                                <div class="product-specs">{{order.product.width}}" x {{order.product.height}}" • {{order.product.medium}} • {{order.product.created_at}}</div>
+                                <div class="product-specs mt-2">Quantity: 1</div>
+                            </div>
+                            <div class="product-price">₹{{ order.product.price }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Order Timeline -->
+                    <div class="details-card">
+                        <h3 class="section-title">Order Timeline</h3>
+                        <div class="order-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon completed">✓</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Order Placed</div>
+                                    <div class="timeline-date">{{ order.date }}</div>
+                                    <div class="timeline-description">Your order has been successfully placed</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon active">📦</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Processing</div>
+                                    <div class="timeline-date">In Progress</div>
+                                    <div class="timeline-description">Your artwork is being prepared for shipment</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon pending">🚚</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Shipped</div>
+                                    <div class="timeline-date">Estimated: January 30, 2025</div>
+                                    <div class="timeline-description">Your order will be dispatched soon</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon pending">🏠</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Delivered</div>
+                                    <div class="timeline-date">Estimated: February 5, 2025</div>
+                                    <div class="timeline-description">Expected delivery to your address</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="details-card">
+                        <h3 class="section-title">Shipping Address</h3>
+                        <div class="info-row">
+                            <span class="info-label">📍 Name:</span>
+                            <span class="info-value">{{ order.firstName }} {{ order.lastName }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🏠 Address:</span>
+                            <span class="info-value">{{ order.address }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🌆 City:</span>
+                            <span class="info-value">{{ order.city }}, {{ order.state }} {{ order.zip }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🌍 Country:</span>
+                            <span class="info-value">{{ order.country }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📱 Phone:</span>
+                            <span class="info-value">{{ order.phone }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📧 Email:</span>
+                            <span class="info-value">{{ order.email }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="details-card">
+                        <h3 class="section-title">Payment Information</h3>
+                        <div class="info-row">
+                            <span class="info-label">💳 Payment Method:</span>
+                            <span class="info-value">Credit Card ending in ****{{ order.card_no|slice:":-4" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🔖 Transaction ID:</span>
+                            <span class="info-value">{{ order.transaction_id }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📅 Payment Date:</span>
+                            <span class="info-value">{{ order.date }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">✓ Status:</span>
+                            <span class="info-value text-success">{{ order.status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-4">
+                    <!-- Order Summary -->
+                    <div class="details-card">
+                        <h3 class="section-title">Order Summary</h3>
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span>₹{{order.product.price}}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping:</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax:</span>
+                            <span>₹{{order.tax}}</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span class="amount">₹{{order.total_amount}}</span>
+                        </div>
+                    </div>
+
+                    <!-- Cancellation Policy -->
+                    <div class="details-card">
+                        <h3 class="section-title">Cancellation Policy</h3>
+                        <div class="cancel-alert">
+                            <h5>⚠️ Important</h5>
+                            <p>You can cancel your order before it ships. Once shipped, you'll need to initiate a return instead.</p>
+                            <p class="mt-2">Refunds are processed within 5-7 business days after cancellation.</p>
+                        </div>
+                    </div>
+
+                    <!-- Need Help -->
+                    <div class="details-card">
+                        <h3 class="section-title">Need Help?</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Contact our support team for assistance with your order.</p>
+                        <a href="#" class="btn-track-order d-block text-center">💬 Contact Support</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cancel Order Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 style="color: #333; font-weight: 600; margin-bottom: 15px;">Are you sure you want to cancel this order?</h6>
+                    <p style="color: #666; margin-bottom: 20px;">Order: <strong>#ORD-2025-12345</strong></p>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #555; font-size: 14px;">
+                            <strong>Artwork:</strong> {{ order.product.title }}<br>
+                            <strong>Amount:</strong> ₹{{ order.total_amount }}
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label" style="font-weight: 600; color: #333;">Reason for cancellation:</label>
+                        <select class="form-select" id="cancelReason">
+                            <option value="">Select a reason</option>
+                            <option value="changed_mind">Changed my mind</option>
+                            <option value="found_better">Found a better price</option>
+                            <option value="ordered_mistake">Ordered by mistake</option>
+                            <option value="delivery_time">Delivery time too long</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <p style="color: #856404; background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 14px; margin: 0;">
+                        ⚠️ This action cannot be undone. You will receive a refund within 5-7 business days.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-keep-order" data-bs-dismiss="modal">Keep Order</button>
+                    <button type="button" class="btn-confirm-cancel" onclick="window.location.href='{% url 'core:cancel_order' order.id %}'">Confirm Cancellation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EaselX. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmCancel() {
+            const reason = document.getElementById('cancelReason').value;
+            
+            if (!reason) {
+                alert('Please select a reason for cancellation');
+                return;
+            }
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('cancelModal'));
+            modal.hide();
+
+            // Show confirmation
+            // alert('Order Cancelled Successfully!\n\nOrder #ORD-2025-12345 has been cancelled.\n\nRefund of $486.00 will be processed within 5-7 business days.\n\nA confirmation email has been sent to your registered email address.');
+
+            // Update page status (in real app, reload or redirect)
+            //document.querySelector('.status-badge').className = 'status-badge cancelled';
+            //document.querySelector('.status-badge').innerHTML = '✕ Cancelled';
+            //document.querySelector('.btn-cancel-order').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

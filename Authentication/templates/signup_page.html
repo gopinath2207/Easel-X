@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EaselX - Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" href="{% static 'signup_styles.css' %}">
+</head>
+<body>
+    <div class="art-icons icon-1">🎨</div>
+    <div class="art-icons icon-2">🖌️</div>
+    <div class="art-icons icon-3">🖼️</div>
+    
+    <div class="signup-wrapper d-flex justify-content-center align-items-center">
+        <div class="signup-container p-5">
+            <div class="logo text-center mb-4">
+                <h1>EaselX</h1>
+                <p class="mt-2">Join our creative community</p>
+            </div>
+
+            <form id="signupForm" action="" novalidate method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstname" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="John" required>
+                        <div class="invalid-feedback">Please enter your first name.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="lastname" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Doe" required>
+                        <div class="invalid-feedback">Please enter your last name.</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="john.doe@example.com" required>
+                    <div class="invalid-feedback">Please enter a valid email address.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">I am a</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="" selected disabled>Select your role</option>
+                        <option value="artist">Artist</option>
+                        <option value="buyer">Buyer</option>
+                    </select>
+                    <div class="invalid-feedback">Please select your role.</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="mobile" class="form-label">Mobile Number</label>
+                        <input type="tel" class="form-control" id="mobile" name="mobile" placeholder="+1 234 567 8900" required>
+                        <div class="invalid-feedback">Please enter a valid mobile number.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="dob" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="dob" name="dob" required>
+                        <div class="invalid-feedback">Please enter your date of birth.</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="johndoe" required>
+                    <div class="invalid-feedback">Please choose a username.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Create a strong password" required>
+                    <div class="password-strength" id="strengthBar"></div>
+                    <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required>
+                    <div class="invalid-feedback" id="confirmPasswordFeedback">Please confirm your password.</div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                    <div class="invalid-feedback">You must agree before submitting.</div>
+                </div>
+
+                <div class="mb-4">
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn signup-btn w-100">Create Account</button>
+            </form>
+
+            <div class="login-link text-center mt-4">
+                Already have an account? <a href="{% url 'login' %}">Sign in</a>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'scripts.js' %}"></script>
+    
+</body>
+</html>

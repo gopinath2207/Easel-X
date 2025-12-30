@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - EaselX</title>
+    <link rel="stylesheet" href="{% static 'user_dash.css' %}">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EaselX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:index' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#myOrders">My Orders</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-logout" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard-section">
+        <div class="container">
+            <!-- Welcome Card -->
+            <div class="welcome-card">
+                <h1>Welcome back, <span id="userName">{{ user.first_name }} {{ user.last_name }}</span>! 👋</h1>
+                <p>Here's your order summary and recent purchases</p>
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalOrders">{{ orders|length }}</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalSpent">₹{{ total_spent }}</div>
+                        <div class="stat-label">Total Spent</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="pendingOrders">{{ pending_orders }}</div>
+                        <div class="stat-label">Pending Orders</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="orders-card">
+                <h2 class="section-title" id="myOrders">My Orders</h2>
+                <div id="ordersList">
+
+                    {% for order in orders %}
+                    <div class="order-item"
+                        onclick="window.location.href='{% url 'customer:order_details' order.id %}'">
+                        <div class="order-header">
+                            <span class="order-id">ORD {{ order.id }}</span>
+                            <span class="order-date">{{ order.date }}</span>
+                        </div>
+                        <div class="order-content">
+                            <img src="{{ order.product.image.url }}" alt="{{ order.product.title }}"
+                                class="order-image">
+                            <div class="order-details">
+                                <div class="order-title">{{ order.product.title }}</div>
+                                <div class="order-artist">by {{ order.product.artist }}</div>
+                                <div class="order-price">₹{{ order.product.price }}</div>
+                            </div>
+                            {% if order.status == 'DELIVERED' %}
+                            <div class="order-status status-delivered">✓ Delivered</div>
+                            {% elif order.status == 'SHIPPING' %}
+                            <div class="order-status status-shipping">🚚 Shipping</div>
+                            {% elif order.status == 'CANCELLED' %}
+                            <div class="order-status status-cancelled">✖ Cancelled</div>
+                            {% else %}
+                            <div class="order-status status-processing">⏳ Processing</div>
+
+                            {% endif %}
+                        </div>
+                        <!-- Orders will be dynamically loaded here -->
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EaselX. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

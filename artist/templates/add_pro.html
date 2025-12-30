@@ -1,0 +1,328 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Artwork - EaselX</title>
+    <link rel="stylesheet" href="{% static 'add_pro.css' %}">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">EaselX</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="btn btn-back" href="{% url 'artist:artist_dashboard' %}">← Back to Dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Success Message -->
+    <div class="success-message" id="successMessage">
+        <div class="success-icon">✓</div>
+        <h5 style="color: #333; text-align: center; margin: 0;">Artwork Published Successfully!</h5>
+    </div>
+
+    <!-- Add Product Section -->
+    <section class="add-product-section">
+        <div class="container">
+            <div class="page-header">
+                <h1>Add New Artwork</h1>
+                <p>Share your masterpiece with the world</p>
+            </div>
+
+            <form id="addProductForm" action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Image Upload -->
+                <div class="form-card">
+                    <h3 class="section-title">Upload Artwork Images <span class="required">*</span></h3>
+                    <div class="image-upload-area" id="imageUploadContainer">
+                        <div class="image-preview{% if not artwork or not artwork.image %} empty{% endif %}" id="imagePreview">
+                            {% if artwork and artwork.image %}
+                                <div class="preview-thumb" id="existingPreview">
+                                    <!-- force inline constrained sizing to protect layout from very large images -->
+                                    <img id="existingPreviewImg" src="{{ artwork.image.url }}" alt="{{ artwork.title }}" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;" />
+                                    <div class="remove-btn" onclick="removeExistingImage()">×</div>
+                                    {% if artwork.image.url %}
+                                    <div class="primary-badge">Current</div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="image-preview-text">No images uploaded</span>
+                            {% endif %}
+                        </div>
+                        <input type="file" id="imageInput" name="image" accept="image/*" onchange="onImageInputChange(this)">
+                        <label for="imageInput" class="btn-upload">Choose Images</label>
+
+                        <!-- Hidden flag to indicate removing existing saved image -->
+                        <input type="hidden" name="remove_image" id="removeImageInput" value="0">
+                        <!-- Action buttons: remove the newly-selected image or delete the saved image -->
+                        <div class="image-actions" style="margin-top:10px;display:flex;gap:10px;align-items:center;">
+                            <button type="button" id="btnRemoveSelected" class="btn-draft" style="display:none;">Remove selected</button>
+                            {% if artwork and artwork.image %}
+                                <button type="button" id="btnDeleteSaved" class="btn-draft">Delete saved image</button>
+                            {% else %}
+                                <button type="button" id="btnDeleteSaved" class="btn-draft" style="display:none;">Delete saved image</button>
+                            {% endif %}
+                            <div id="selectedFilename" style="margin-left:12px;color:#333;font-size:14px;display:none;"></div>
+                        </div>
+                    </div>
+                    <small class="form-text">You can upload up to 5 images. Supported formats: JPG, PNG. Max size per
+                        image: 5MB.</small>
+                </div>
+
+                <!-- Basic Information -->
+                <div class="form-card">
+                    <h3 class="section-title">Basic Information</h3>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="artworkTitle" class="form-label">Artwork Title <span
+                                    class="required">*</span></label>
+                            {% if artwork %}
+                            <input type="text" class="form-control" id="title" name="title" value="{{ artwork.title }}"
+                                placeholder="Enter a captivating title" required>
+                            {% else %}
+                            <input type="text" class="form-control" id="title" name="title"
+                                placeholder="Enter a captivating title" required>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="artworkPrice" class="form-label">Price <span class="required">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                {% if artwork %}
+                                <input type="number" class="form-control" id="price" name="price"
+                                    value="{{ artwork.price }}" placeholder="0.00" step="0.01" min="0" required>
+                                {% else %}
+                                <input type="number" class="form-control" id="price" name="price" placeholder="0.00"
+                                    step="0.01" min="0" required>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category <span class="required">*</span></label>
+                            {% if artwork %}
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="{{ artwork.category }}" selected>{{ artwork.category|capfirst }}</option>
+                                <option value="">Select a category</option>
+                                <option value="abstract">Abstract</option>
+                                <option value="contemporary">Contemporary</option>
+                                <option value="modern">Modern</option>
+                                <option value="impressionist">Impressionist</option>
+                                <option value="landscape">Landscape</option>
+                                <option value="portrait">Portrait</option>
+                                <option value="sculpture">Sculpture</option>
+                                <option value="digital">Digital Art</option>
+                                <option value="other">Other</option>
+                            </select>
+                            {% else %}
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="abstract">Abstract</option>
+                                <option value="contemporary">Contemporary</option>
+                                <option value="modern">Modern</option>
+                                <option value="impressionist">Impressionist</option>
+                                <option value="landscape">Landscape</option>
+                                <option value="portrait">Portrait</option>
+                                <option value="sculpture">Sculpture</option>
+                                <option value="digital">Digital Art</option>
+                                <option value="other">Other</option>
+                            </select>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="medium" class="form-label">Medium <span class="required">*</span></label>
+
+                            <select class="form-select" id="medium" name="medium" required>
+                                {% if artwork %}
+                                <option value="{{ artwork.medium }}" selected>{{ artwork.medium|capfirst }}</option>
+                                {% endif %}
+                                <option value="">Select a medium</option>
+                                <option value="oil">Oil Paint</option>
+                                <option value="acrylic">Acrylic</option>
+                                <option value="watercolor">Watercolor</option>
+                                <option value="mixed">Mixed Media</option>
+                                <option value="digital">Digital</option>
+                                <option value="charcoal">Charcoal</option>
+                                <option value="pencil">Pencil</option>
+                                <option value="ink">Ink</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="description" class="form-label">Description <span
+                                    class="required">*</span></label>
+                            <textarea class="form-control" id="description" name="description"
+                                placeholder="Describe your artwork, inspiration, and technique..."
+                                required>{% if artwork %}{{ artwork.description }}{% endif %}</textarea>
+                            <small class="form-text">Tell the story behind your artwork (Min 50 characters)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dimensions & Details -->
+                <div class="form-card">
+                    <h3 class="section-title">Dimensions & Details</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="width" class="form-label">Width <span class="required">*</span></label>
+                            <div class="input-group">
+                                {% if artwork %}
+                                <input type="number" class="form-control" id="width" name="width"
+                                    value="{{ artwork.width }}" placeholder="0" step="0.1" min="0" required>
+                                {% else %}
+                                <input type="number" class="form-control" id="width" name="width" placeholder="0"
+                                    step="0.1" min="0" required>
+                                {% endif %}
+                                <!-- <input type="number" class="form-control" id="width" name="width" placeholder="0" step="0.1" min="0" required> -->
+                                <span class="input-group-text">inches</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="height" class="form-label">Height <span class="required">*</span></label>
+                            <div class="input-group">
+                                {% if artwork %}
+                                <input type="number" class="form-control" id="height" name="height"
+                                    value="{{ artwork.height }}" placeholder="0" step="0.1" min="0" required>
+                                {% else %}
+                                <input type="number" class="form-control" id="height" name="height" placeholder="0"
+                                    step="0.1" min="0" required>
+                                {% endif %}
+                                <!-- <input type="number" class="form-control" id="height" name="height" placeholder="0" step="0.1" min="0" required> -->
+                                <span class="input-group-text">inches</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="year" class="form-label">Year Created <span class="required">*</span></label>
+                            {% if artwork %}
+                            <input type="number" class="form-control" id="year" name="year_created"
+                                value="{{ artwork.year_created }}" placeholder="2025" min="1900" max="2025" required>
+                            {% else %}
+                            <input type="number" class="form-control" id="year" name="year_created" placeholder="2025"
+                                min="1900" max="2025" required>
+                            {% endif %}
+                            <!-- <input type="number" class="form-control" id="year" name="createdAt" placeholder="2025" min="1900" max="2025" required> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="form-card">
+                    <h3 class="section-title">Tags & Keywords</h3>
+                    <label class="form-label">Add Tags</label>
+                    <div class="tags-container" id="tagsContainer">
+                        <input type="text" class="tag-input" id="tagInput" placeholder="Type and press Enter...">
+                    </div>
+                    <small class="form-text">Add keywords to help buyers discover your artwork (e.g., colorful,
+                        minimalist, abstract)</small>
+                </div>
+
+                <!-- Additional Options -->
+                <div class="form-card">
+                    <h3 class="section-title">Additional Options</h3>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                {% if artwork %}
+                                <input class="form-check-input" type="checkbox" id="framed" name="framed" {% if artwork.framed %}checked{% endif %}>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox" id="framed" name="framed">
+                                {% endif %}
+                                <label class="form-check-label" for="framed">
+                                    <strong>Framed</strong><br>
+                                    <small class="text-muted">Is this artwork framed?</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                {% if artwork %}
+                                <input class="form-check-input" type="checkbox" id="signed" name="signed" {% if artwork.signed %}checked{% endif %}>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox" id="signed" name="signed">
+                                {% endif %}
+                                <label class="form-check-label" for="signed">
+                                    <strong>Signed</strong><br>
+                                    <small class="text-muted">Is this artwork signed by you?</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                {% if artwork %}
+                                <input class="form-check-input" type="checkbox" id="certificate"
+                                    name="certificate_of_authenticity" {% if artwork.certificate_of_authenticity %}checked{% endif %}>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox" id="certificate"
+                                    name="certificate_of_authenticity">
+                                {% endif %}
+                                <label class="form-check-label" for="certificate">
+                                    <strong>Certificate of Authenticity</strong><br>
+                                    <small class="text-muted">Include certificate with purchase</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                {% if artwork %}
+
+                                <input class="form-check-input" type="checkbox" id="featured" name="featured" {% if artwork.featured %}checked{% endif %}>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                                {% endif %}
+                                <label class="form-check-label" for="featured">
+                                    <strong>Featured Artwork</strong><br>
+                                    <small class="text-muted">Highlight in your portfolio</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-card">
+                    <div class="btn-group-custom">
+                        <button type="submit" class="btn-publish">Publish Artwork</button>
+
+                        <button type="button" class="btn-draft" onclick="window.history.back();">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    {% if message %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ message }}
+                    </div>
+                    {% endif %}
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 EaselX. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+</body>
+
+    <!-- page script: image preview/drag-drop -->
+    <!-- cache-bust during testing by changing the query version if needed -->
+    <script src="{% static 'addpro.js' %}?v=2"></script>
+
+</html>
