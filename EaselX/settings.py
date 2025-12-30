@@ -165,4 +165,4 @@ AUTH_USER_MODEL = 'Authentication.User'  # Custom user model
 
 # Use pathlib to build MEDIA_ROOT so it reliably points to the folder where your
 # uploaded media currently lives (Global_Static/media in this project).
-MEDIA_ROOT = BASE_DIR / "Global_Static" / "media"
+MEDIA_ROOT = BASE_DIR / "media"
